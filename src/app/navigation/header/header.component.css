@@ -1,0 +1,20 @@
+.navigation-links {
+  list-style-type: none;
+  cursor: pointer;
+}
+
+a {
+text-decoration: none;
+color: white;
+font-size: 16px;
+}
+
+a:hover,
+a:active {
+  color: lightgray;
+}
+
+ul>li {
+  padding: 0;
+  margin: 0;
+}

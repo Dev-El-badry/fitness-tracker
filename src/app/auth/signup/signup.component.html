@@ -1,0 +1,45 @@
+
+<section id="signForm" >
+  <form fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="10px" #f="ngForm" (ngSubmit)="submitForm(f)">
+    <mat-form-field>
+      <input
+      type="email"
+      matInput
+      placeholder="enter your email"
+      ngModel
+      name="email"
+      email
+      required
+      #emailInput="ngModel"
+      />
+      <mat-error *ngIf="!emailInput.hasError('required')">Email Is Invaild</mat-error>
+      <mat-error *ngIf="emailInput.hasError('required')">Field Must Not Be Empty</mat-error>
+    </mat-form-field>
+
+    <mat-form-field hintLabel="Should It Be 6 character">
+      <input
+      type="password"
+      matInput
+      placeholder="enter your password"
+      ngModel
+      name="password"
+      #pwInput="ngModel"
+      required
+      minlength="6"
+      />
+
+      <mat-hint align="end"> {{ pwInput.value?.length }} / 6</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field>
+      <input matInput [matDatepicker]="picker" [max]="maxDate" placeholder="set you birthday" ngModel name="birthday" />
+      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+    <mat-checkbox color="primary" ngModel name="agree">Agree To Conditions And Terms .</mat-checkbox>
+
+    <button *ngIf="!isLoading" mat-raised-button color="primary" type="submit" name="submit" [disabled]="f.invalid">Submit</button>
+    <mat-spinner *ngIf="isLoading"></mat-spinner>
+  </form>
+</section>
