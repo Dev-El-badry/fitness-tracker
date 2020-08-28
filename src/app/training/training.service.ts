@@ -2,75 +2,86 @@ import { Injectable } from '@angular/core';
 import { Excerice } from './excerice.model';
 import { Subject } from 'rxjs/Subject';
 import { AngularFirestore } from '@angular/fire/firestore';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { Subscription } from 'rxjs/Subscription';
-import { UIService } from '../shared/ui.service';
-
-
+// import { UIService } from '../shared/ui.service';
+import * as fromTraining from './training.reducer';
+import { Store } from '@ngrx/store';
+import * as UI from '../shared/ui.actions';
+import * as Training from './training.actions';
 @Injectable()
 export class TrainingService {
-  changeStatus = new Subject<Excerice>();
-  changesStatus = new Subject<Excerice[]>();
-  finishExcericesChanges = new Subject<Excerice[]>();
-  private availableExcerice: Excerice[] = [];
+
+  private availableExcerice = [];
   afSub: Subscription[] = [];
 
   runningExcerice: Excerice;
 
-  constructor(private db: AngularFirestore, private uiService: UIService) {}
+  constructor(private db: AngularFirestore, private store: Store<fromTraining.State>) {}
 
   fetchAvailableExcerice() {
-    this.uiService.loadingChangedStatus.next(true);
+    // this.uiService.loadingChangedStatus.next(true);
+    this.store.dispatch(new UI.StartLoading());
     this.afSub.push(this.db
       .collection("availableExcerices")
       .snapshotChanges()
       .pipe(
         map(docArray => {
-          return docArray.map(doc => {
-            const data = doc.payload.doc.data() as Excerice[];
-            const id = doc.payload.doc.id;
+         
 
-            return {
-              id,
-              ...data
-            };
-          });
+            return docArray.map(doc => {
+              return {
+                id: doc.payload.doc.id,
+                name: doc.payload.doc.data().name,
+                duration: doc.payload.doc.data().duration,
+                calories: doc.payload.doc.data().calories
+              };
+            });
+        
         })
       )
       .subscribe((res: Excerice[]) => {
-        this.availableExcerice = res;
-        this.changesStatus.next([...this.availableExcerice]);
-        this.uiService.loadingChangedStatus.next(false);
+        this.store.dispatch(new Training.SetAvailableTrainings(res));
+        this.store.dispatch(new UI.StopLoading());
       }));
   }
 
   startExcerice(selectedID: string) {
-    this.runningExcerice = this.availableExcerice.find(
-      ex => ex.id === selectedID
-    );
-    this.changeStatus.next({ ...this.runningExcerice });
+    // this.runningExcerice = this.availableExcerice.find(
+    //   ex => ex.id === selectedID
+    // );
+    this.store.dispatch(new Training.SetStartTraining(selectedID));
+    // this.changeStatus.next({ ...this.runningExcerice });
   }
 
   complateExcerice() {
-    this.addDataToDatabase({
-      ...this.runningExcerice,
-      type: 'complated',
-      date: new Date()
+    this.store.select(fromTraining.getActiveTrainings).pipe(take(1)).subscribe(ex => {
+
+      this.addDataToDatabase({
+        ...ex,
+        type: 'complated',
+        date: new Date()
+      });
+ 
+      this.store.dispatch(new Training.SetStopTraining());
     });
-    this.runningExcerice = null;
-    this.changeStatus.next(null);
   }
 
   canceledExcerice(progress: number) {
-    this.addDataToDatabase({
-      ...this.runningExcerice,
-      duration: this.runningExcerice.duration * (progress / 100),
-      calories: this.runningExcerice.calories * (progress / 100),
-      type: "cancel",
-      date: new Date()
+    this.store.select(fromTraining.getActiveTrainings).pipe(take(1)).subscribe(ex => {
+
+      this.addDataToDatabase({
+        ...ex,
+        calories: ex.calories * (progress / 100),
+        duration: ex.duration * (progress / 100),
+        type: 'cancel',
+        date: new Date()
+      });
+
+      this.store.dispatch(new Training.SetStopTraining());
     });
-    this.runningExcerice = null;
-    this.changeStatus.next(null);
+   
+  
   }
 
   getRunningExcerice() {
@@ -89,7 +100,8 @@ export class TrainingService {
         .collection("finishExcerices")
         .valueChanges()
         .subscribe((excerices: Excerice[]) => {
-          this.finishExcericesChanges.next([...excerices]);
+          // this.finishExcericesChanges.next([...excerices]);
+          this.store.dispatch(new Training.SetFinishedTrainings(excerices));
         })
     );
   }

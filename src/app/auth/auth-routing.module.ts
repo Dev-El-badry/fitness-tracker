@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import {  RouterModule, Routes } from '@angular/router';
 
 import { SignupComponent } from './signup/signup.component';
 import { LoginComponent } from './login/login.component';
 
 
-const router: Router = [
+const router: Routes = [
   { path: 'signup', component: SignupComponent },
   { path: 'login', component: LoginComponent }
 ];

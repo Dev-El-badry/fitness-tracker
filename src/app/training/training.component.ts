@@ -1,25 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs/Subscription';
+import { Observable } from 'rxjs';
 import { TrainingService } from './training.service';
-
+import { Store } from '@ngrx/store';
+import * as fromTraninig from './training.reducer';
 @Component({
   selector: 'app-training',
   templateUrl: './training.component.html',
   styleUrls: ['./training.component.css']
 })
 export class TrainingComponent implements OnInit {
-  isOpened = false;
-  excericeSubscription: Subscription;
-  constructor(private trainingService: TrainingService) { }
+  isOpened$: Observable<boolean>;
+  constructor(private trainingService: TrainingService, private store: Store<fromTraninig.State>) { }
 
   ngOnInit() {
-    this.excericeSubscription = this.trainingService.changeStatus.subscribe(excerice => {
-      if (excerice) {
-        this.isOpened = true;
-      } else {
-        this.isOpened = false;
-      }
-    });
+   this.isOpened$ = this.store.select(fromTraninig.getIsOpened);
   }
 
 }

@@ -1,6 +1,9 @@
 import { Component, OnInit, EventEmitter, Output } from '@angular/core';
 import { AuthService } from '../../auth/auth.service';
 import { Subscription } from 'rxjs/Subscription';
+import * as fromRoot from '../../app.reducer';
+import {Store} from '@ngrx/store';
+import { Observable } from 'rxjs';
 @Component({
   selector: "app-list-nav",
   templateUrl: "./list-nav.component.html",
@@ -8,14 +11,12 @@ import { Subscription } from 'rxjs/Subscription';
 })
 export class ListNavComponent implements OnInit {
   @Output() closeSideNav = new EventEmitter<void>();
-  isAuth = false;
+  isAuth$: Observable<boolean>;
   authSubscribtion: Subscription;
-  constructor(private auth: AuthService) {}
+  constructor(private auth: AuthService, private store: Store<fromRoot.State>) {}
 
   ngOnInit() {
-    this.authSubscribtion = this.auth.authChange.subscribe(resultStatus => {
-      this.isAuth = resultStatus;
-    });
+    this.isAuth$ = this.store.select(fromRoot.getIsAuthenticate);
   }
 
   onClose() {

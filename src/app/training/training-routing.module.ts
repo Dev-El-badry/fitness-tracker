@@ -1,10 +1,10 @@
 import { NgModule } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import {  RouterModule, Routes } from '@angular/router';
 import { AuthGuard } from '../auth/auth.guard';
 import { TrainingComponent } from './training.component';
 
 
-const router: Router = [
+const router: Routes = [
   { path: "", component: TrainingComponent }
 ];
 
